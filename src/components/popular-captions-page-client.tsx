@@ -17,8 +17,9 @@ import { useRouter } from "next/navigation";
 import { LoginPromptModal } from "@/components/ui/login-prompt-modal";
 import { checkAuthStatusAction } from "@/app/actions/auth/check-auth-status";
 import Link from "next/link";
-import { ChevronUp, ChevronDown } from "lucide-react";
+import { ChevronUp, ChevronDown, Search } from "lucide-react";
 import { buildCaptionShareUrl } from "@/utils/site-url";
+import { matchesCaptionSearch } from "@/utils/caption-search";
 import { BrandImage } from "@/components/brand-image";
 import {
   Tooltip,
@@ -105,6 +106,7 @@ export default function PopularCaptionsPageClient({
   const [itemsPerPage, setItemsPerPage] = useState(8);
   const [visibleCount, setVisibleCount] = useState(8);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
   const { toast } = useToast();
   const router = useRouter();
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(initialIsAuthenticated);
@@ -288,6 +290,11 @@ export default function PopularCaptionsPageClient({
     setSelectedIndex(null);
   };
 
+  const normalizedSearchTerm = searchTerm.trim().toLowerCase();
+  const filteredCaptions = normalizedSearchTerm
+    ? popularCaptions.filter((caption) => matchesCaptionSearch(caption, normalizedSearchTerm))
+    : popularCaptions;
+
   useEffect(() => {
     const handleEscape = (event: KeyboardEvent) => {
       if (event.key === "Escape" && selectedIndex !== null) {
@@ -296,17 +303,17 @@ export default function PopularCaptionsPageClient({
     };
 
     const handleArrowKeys = (event: KeyboardEvent) => {
-      if (selectedIndex === null || popularCaptions.length === 0) return;
+      if (selectedIndex === null || filteredCaptions.length === 0) return;
 
       if (event.key === "ArrowLeft") {
         setSelectedIndex((prev) => {
           if (prev === null) return null;
-          return prev === 0 ? popularCaptions.length - 1 : prev - 1;
+          return prev === 0 ? filteredCaptions.length - 1 : prev - 1;
         });
       } else if (event.key === "ArrowRight") {
         setSelectedIndex((prev) => {
           if (prev === null) return null;
-          return prev === popularCaptions.length - 1 ? 0 : prev + 1;
+          return prev === filteredCaptions.length - 1 ? 0 : prev + 1;
         });
       }
     };
@@ -317,7 +324,7 @@ export default function PopularCaptionsPageClient({
       document.removeEventListener("keydown", handleEscape);
       document.removeEventListener("keydown", handleArrowKeys);
     };
-  }, [selectedIndex, popularCaptions.length]);
+  }, [selectedIndex, filteredCaptions.length]);
 
   const loadMore = () => {
     setVisibleCount((prev) => prev + itemsPerPage);
@@ -329,8 +336,8 @@ export default function PopularCaptionsPageClient({
     setVisibleCount(newValue);
   };
 
-  const visibleCaptions = popularCaptions.slice(0, visibleCount);
-  const hasMore = visibleCount < popularCaptions.length;
+  const visibleCaptions = filteredCaptions.slice(0, visibleCount);
+  const hasMore = visibleCount < filteredCaptions.length;
 
   if (isLoading) {
     return (
@@ -466,7 +473,26 @@ export default function PopularCaptionsPageClient({
           ))}
         </div>
       </div>
-      <div className="flex-1 w-full flex flex-col gap-8 p-4 relative">
+      <div className="flex-1 w-full flex flex-col gap-6 p-4 relative">
+        <div className="flex justify-center w-full">
+          <div className="relative w-full max-w-xl">
+            <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <input
+              type="search"
+              value={searchTerm}
+              onChange={(event) => {
+                setSearchTerm(event.target.value);
+                setVisibleCount(itemsPerPage);
+              }}
+              placeholder="Search captions"
+              aria-label="Search captions"
+              className="w-full rounded-full border border-border bg-background/80 pl-11 pr-4 py-3 text-sm
+                         text-foreground shadow-sm outline-none transition focus:border-primary/60
+                         focus:ring-2 focus:ring-primary/20"
+            />
+          </div>
+        </div>
+
         <div className="flex justify-end items-center w-full max-w-7xl mx-auto px-4">
             <div className="flex items-center gap-4">
               <span className="text-sm text-muted-foreground">Show</span>
@@ -506,7 +532,9 @@ export default function PopularCaptionsPageClient({
           </div>
         </div>
       {visibleCaptions.length === 0 ? (
-        <p className="text-center text-gray-400 mt-12 text-lg">No captions found.</p>
+        <p className="text-center text-gray-400 mt-12 text-lg">
+          {searchTerm.trim() ? "No captions match your search." : "No captions found."}
+        </p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {visibleCaptions.map((caption, index) => {
@@ -675,9 +703,9 @@ export default function PopularCaptionsPageClient({
             )}
 
       {/* Modal */}
-      {selectedIndex !== null && popularCaptions.length > 0 && (
+      {selectedIndex !== null && filteredCaptions.length > 0 && (
         <CaptionModal
-          items={popularCaptions.map((caption) => ({
+          items={filteredCaptions.map((caption) => ({
             id: caption.id,
             content: caption.content,
             imageUrl: caption.image_url,
