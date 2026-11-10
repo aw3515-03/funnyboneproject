@@ -2,6 +2,20 @@ import { createServerClient } from "@supabase/ssr";
 import { getSupabaseAuthCookieOptions } from "@/utils/supabase/authCookies";
 import { type NextRequest, NextResponse } from "next/server";
 
+type SupabaseCookieSet = {
+  name: string;
+  value: string;
+  options?: {
+    domain?: string;
+    expires?: Date;
+    httpOnly?: boolean;
+    maxAge?: number;
+    path?: string;
+    sameSite?: boolean | "lax" | "strict" | "none";
+    secure?: boolean;
+  };
+};
+
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   if (pathname === "/start" || pathname.startsWith("/start/")) {
@@ -17,13 +31,13 @@ export async function middleware(request: NextRequest) {
     {
       cookieOptions: getSupabaseAuthCookieOptions(process.env.NEXT_PUBLIC_SUPABASE_URL!),
       cookies: {
-        getAll() {
+        getAll(): Array<{ name: string; value: string }> {
           return request.cookies.getAll().map((cookie) => ({
             name: cookie.name,
             value: cookie.value,
           }));
         },
-        setAll(cookies) {
+        setAll(cookies: SupabaseCookieSet[]) {
           cookies.forEach(({ name, value, options }) => {
             response.cookies.set({
               name,
