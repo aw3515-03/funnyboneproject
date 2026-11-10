@@ -1,84 +1,15 @@
-import { createServerClient } from "@supabase/ssr";
-import { getSupabaseAuthCookieOptions } from "@/utils/supabase/authCookies";
 import { type NextRequest, NextResponse } from "next/server";
-
-type SupabaseCookieSet = {
-  name: string;
-  value: string;
-  options?: {
-    domain?: string;
-    expires?: Date;
-    httpOnly?: boolean;
-    maxAge?: number;
-    path?: string;
-    sameSite?: boolean | "lax" | "strict" | "none";
-    secure?: boolean;
-  };
-};
 
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
+
   if (pathname === "/start" || pathname.startsWith("/start/")) {
     const url = request.nextUrl.clone();
     url.pathname = pathname.replace(/^\/start/, "/new");
     return NextResponse.redirect(url);
   }
 
-  const response = NextResponse.next();
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookieOptions: getSupabaseAuthCookieOptions(process.env.NEXT_PUBLIC_SUPABASE_URL!),
-      cookies: {
-        getAll(): Array<{ name: string; value: string }> {
-          return request.cookies.getAll().map((cookie) => ({
-            name: cookie.name,
-            value: cookie.value,
-          }));
-        },
-        setAll(cookies: SupabaseCookieSet[]) {
-          cookies.forEach(({ name, value, options }) => {
-            response.cookies.set({
-              name,
-              value,
-              ...options,
-            });
-          });
-        },
-      },
-    }
-  );
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  // Skip checks for public routes
-  if (
-    request.nextUrl.pathname.startsWith("/login") ||
-    request.nextUrl.pathname.startsWith("/sign-up") ||
-    request.nextUrl.pathname.startsWith("/unauthorized")
-  ) {
-    return response;
-  }
-
-  // If no user, allow access to public routes
-  if (!user) {
-    return response;
-  }
-
-  // Handle anonymous users
-  if (user.is_anonymous) {
-    // Block access to /new for anonymous users
-    if (request.nextUrl.pathname === "/new") {
-      return NextResponse.redirect(new URL("/login", request.url));
-    }
-    // Allow access to other routes for anonymous users
-    return response;
-  }
-
-  return response;
+  return NextResponse.next();
 }
 
 // Specify which routes to run the middleware on
