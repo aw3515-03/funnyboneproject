@@ -16,7 +16,7 @@ import { CaptionGridSkeleton } from "@/components/ui/image-grid-skeleton";
 import { useRouter } from "next/navigation";
 import { LoginPromptModal } from "@/components/ui/login-prompt-modal";
 import { checkAuthStatusAction } from "@/app/actions/auth/check-auth-status";
-import { ChevronUp, ChevronDown } from "lucide-react";
+import { ChevronUp, ChevronDown, MessageCircle } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -558,19 +558,34 @@ export default function PopularCaptionsPage() {
                     className="p-3 bg-gray-50 dark:bg-[#1a1a1a] border-t border-gray-200
                                dark:border-white/10"
                   >
-                    <div className="flex items-center justify-between">
-                      <div
-                        className="p-2 text-gray-600 dark:text-white hover:bg-gray-200/70
-                                    dark:hover:bg-white/10 rounded transition-colors flex
-                                    items-center justify-center"
-                        onClick={(event) => event.stopPropagation()}
-                      >
-                        <BookmarkButton
-                          bookmarked={savedCaptions.includes(caption.id)}
-                          onClick={() => handleSlideSave(caption.id)}
-                          size={20}
-                        />
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          aria-label={`Open comments for ${caption.content}`}
+                          className="p-2 text-gray-600 dark:text-white hover:bg-gray-200/70 dark:hover:bg-white/10 rounded transition-colors flex items-center justify-center"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            handleImageClick(index);
+                          }}
+                        >
+                          <MessageCircle className="h-4 w-4" />
+                        </button>
+
+                        <div
+                          className="p-2 text-gray-600 dark:text-white hover:bg-gray-200/70
+                                      dark:hover:bg-white/10 rounded transition-colors flex
+                                      items-center justify-center"
+                          onClick={(event) => event.stopPropagation()}
+                        >
+                          <BookmarkButton
+                            bookmarked={savedCaptions.includes(caption.id)}
+                            onClick={() => handleSlideSave(caption.id)}
+                            size={20}
+                          />
+                        </div>
                       </div>
+
                       <div
                         className="p-2 hover:bg-gray-200/70 dark:hover:bg-white/10 rounded
                                     transition-colors flex items-center justify-center"

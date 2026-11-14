@@ -20,6 +20,9 @@ export const fetchPopularCaptionsAction = async (limit = 100, period: Period = '
       images!inner (
         id,
         url,
+        image_description,
+        additional_context,
+        celebrity_recognition,
         is_common_use,
         is_public
       )
@@ -65,6 +68,9 @@ export const fetchPopularCaptionsAction = async (limit = 100, period: Period = '
     created_datetime_utc: string
     images?: {
       url?: string | null
+      image_description?: string | null
+      additional_context?: string | null
+      celebrity_recognition?: unknown
       is_common_use?: boolean | null
       is_public?: boolean | null
     } | null
@@ -76,7 +82,10 @@ export const fetchPopularCaptionsAction = async (limit = 100, period: Period = '
     content: caption.content ?? '',
     image_id: caption.image_id ?? '',
     image_url: caption.images?.url ?? '',
-    like_count: caption.like_count || 0, // Use like_count column from database
+    image_description: caption.images?.image_description ?? null,
+    additional_context: caption.images?.additional_context ?? null,
+    celebrity_recognition: caption.images?.celebrity_recognition ?? null,
+    like_count: caption.like_count || 0,
     is_common_use: caption.images?.is_common_use ?? false,
     created_at: caption.created_datetime_utc,
   }))

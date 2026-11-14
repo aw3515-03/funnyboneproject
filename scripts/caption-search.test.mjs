@@ -16,3 +16,21 @@ test('returns true when no search text is provided', () => {
   const result = matchesCaptionSearch({ content: 'Something witty' }, '')
   assert.equal(result, true)
 })
+
+test('matches searchable image celebrity metadata while ignoring confidence values', () => {
+  const recognition = {
+    content: [
+      {
+        name: 'Nyan Cat',
+        type: 'meme',
+        confidence: 95,
+        description: 'A popular internet meme featuring a pixelated cat with a Pop-Tart body.'
+      }
+    ],
+    scene_context: 'This image represents the Nyan Cat meme.'
+  }
+
+  assert.equal(matchesCaptionSearch({ celebrity_recognition: recognition }, 'Nyan Cat'), true)
+  assert.equal(matchesCaptionSearch({ celebrity_recognition: recognition }, 'meme'), true)
+  assert.equal(matchesCaptionSearch({ celebrity_recognition: recognition }, '95'), false)
+})

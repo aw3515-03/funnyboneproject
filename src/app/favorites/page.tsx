@@ -5,7 +5,7 @@ import { deleteSaveAction, fetchSavedCaptionsAction } from "@/app/actions/captio
 import { checkAuthStatusAction } from "@/app/actions/auth/check-auth-status";
 import { useToast } from "@/hooks/use-toast";
 import { IconChevronDown } from "@tabler/icons-react";
-import { Bookmark } from "lucide-react";
+import { Bookmark, MessageCircle } from "lucide-react";
 import ShareModal from "@/components/share-modal";
 import { FavoritesGridSkeleton } from "@/components/ui/image-grid-skeleton";
 import { CaptionModal } from "@/components/ui/caption-modal";
@@ -330,19 +330,33 @@ export default function SavedCaptionsPage() {
 
                       {/* Bottom Action Bar */}
                       <div className="p-3 bg-[#1a1a1a] border-t border-white/10 flex-shrink-0">
-                        <div className="flex items-center justify-between">
-                          <div
-                            className="p-2 hover:bg-white/10 rounded transition-colors
-                                        flex items-center justify-center"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <BookmarkButton
-                              bookmarked={true}
-                              onClick={() => {
-                                handleSlideSave(caption.id);
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              aria-label={`Open comments for ${caption.content}`}
+                              className="p-2 text-white hover:bg-white/10 rounded transition-colors flex items-center justify-center"
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                handleImageClick(index);
                               }}
-                              size={20}
-                            />
+                            >
+                              <MessageCircle className="h-4 w-4" />
+                            </button>
+
+                            <div
+                              className="p-2 hover:bg-white/10 rounded transition-colors
+                                          flex items-center justify-center"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <BookmarkButton
+                                bookmarked={true}
+                                onClick={() => {
+                                  handleSlideSave(caption.id);
+                                }}
+                                size={20}
+                              />
+                            </div>
                           </div>
                           <div
                             className="p-2 hover:bg-white/10 rounded transition-colors

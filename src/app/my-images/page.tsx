@@ -20,6 +20,7 @@ import {
 } from '../actions/images/fetch-images-with-captions-action'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import DeleteConfirmationModal from '@/components/ui/deleteConfirmationModal'
+import { extractSearchableRecognitionText } from '@/utils/caption-search'
 
 export default function UserImagesPage() {
   const [userImages, setUserImages] = useState<ImageWithCaptions[]>([])
@@ -199,9 +200,9 @@ export default function UserImagesPage() {
       const matchAdditionalContext = String(image.additional_context ?? '')
         .toLowerCase()
         .includes(term)
-      const matchCelebrityRecognition = String(image.celebrity_recognition ?? '')
-        .toLowerCase()
-        .includes(term)
+      const matchCelebrityRecognition = extractSearchableRecognitionText(
+        image.celebrity_recognition,
+      ).some((value) => value.toLowerCase().includes(term))
       const matchCaption = image.captions?.some((caption) =>
         caption.content?.toLowerCase().includes(term)
       )

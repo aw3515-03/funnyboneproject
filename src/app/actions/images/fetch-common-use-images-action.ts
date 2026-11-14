@@ -1,5 +1,6 @@
 'use server'
 
+import { extractSearchableRecognitionText } from '@/utils/caption-search'
 import { createClient } from '@/utils/supabase/server'
 
 export const fetchCommonUseImagesAction = async (
@@ -128,7 +129,9 @@ export const fetchCommonUseImagesAction = async (
     const filteredImages = allImages.filter((image) => {
       const imageDescription = toSearchValue(image.image_description)
       const additionalContext = toSearchValue(image.additional_context)
-      const celebrityRecognition = toSearchValue(image.celebrity_recognition)
+      const celebrityRecognition = extractSearchableRecognitionText(
+        image.celebrity_recognition,
+      ).join(' ')
 
       return (
         imageDescription.toLowerCase().includes(normalizedSearchTerm) ||
